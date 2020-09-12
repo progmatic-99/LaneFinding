@@ -21,16 +21,16 @@ import numpy as np
 def make_coordinates(image, line_parameters):
     slope, intercept = line_parameters
     y1 = image.shape[0]
-    y2 = int(y1 * 3 / 5)
-    x1 = (y1 - intercept) // slope
-    x2 = (y2 - intercept) // slope
+    y2 = int(y1 * (3 / 5))
+    x1 = int((y1 - intercept) / slope)
+    x2 = int((y2 - intercept) / slope)
 
     return np.array([x1, y1, x2, y2])
 
 
-def average_slop_intercept(image, lines):
+def average_slope_intercept(image, lines):
     left_fit = []
-    right_lift = []
+    right_fit = []
     for line in lines:
         x1, y1, x2, y2 = line.reshape(4)
         parameters = np.polyfit((x1, y1), (x2, y2), 1)
@@ -39,13 +39,13 @@ def average_slop_intercept(image, lines):
         if slope < 0:
             left_fit.append((slope, intercept))
         else:
-            right_lift.append((slope, intercept))
+            right_fit.append((slope, intercept))
     left_fit_average = np.average(left_fit, axis=0)
-    right_fit_average = np.average(left_fit, axis=0)
+    right_fit_average = np.average(right_fit, axis=0)
     left_line = make_coordinates(image, left_fit_average)
     right_line = make_coordinates(image, right_fit_average)
 
-    return np.array(left_line, right_line)
+    return np.array([left_line, right_line])
 
 
 def canny(image):
@@ -98,9 +98,9 @@ cropped_img = region_of_interest(canny_img)
 lines = cv2.HoughLinesP(
     cropped_img, 2, np.pi / 180, 100, np.array([]), minLineLength=40, maxLineGap=5
 )
-averaged_lines = average_slop_intercept(lane_img, lines)
+averaged_lines = average_slope_intercept(lane_img, lines)
 line_img = display_lines(lane_img, averaged_lines)
-combo = cv2.addweighted(lane_img, 0.8, line_img, 1, 1)
+combo = cv2.addWeighted(lane_img, 0.8, line_img, 1, 1)
 cv2.imshow("Result", combo)
 cv2.waitKey(0)
 
