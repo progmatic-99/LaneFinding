@@ -33,7 +33,7 @@ def average_slope_intercept(image, lines):
     right_fit = []
     for line in lines:
         x1, y1, x2, y2 = line.reshape(4)
-        parameters = np.polyfit((x1, y1), (x2, y2), 1)
+        parameters = np.polyfit((x1, x2), (y1, y2), 1)
         slope = parameters[0]
         intercept = parameters[1]
         if slope < 0:
@@ -91,18 +91,34 @@ r = x cos(n) + y sin(n) :n -> angle
 Line of best fit can be detected by intersection of curves
 """
 
-img = cv2.imread("test_image.jpg")
-lane_img = np.copy(img)
-canny_img = canny(lane_img)
-cropped_img = region_of_interest(canny_img)
-lines = cv2.HoughLinesP(
-    cropped_img, 2, np.pi / 180, 100, np.array([]), minLineLength=40, maxLineGap=5
-)
-averaged_lines = average_slope_intercept(lane_img, lines)
-line_img = display_lines(lane_img, averaged_lines)
-combo = cv2.addWeighted(lane_img, 0.8, line_img, 1, 1)
-cv2.imshow("Result", combo)
-cv2.waitKey(0)
+# img = cv2.imread("test_image.jpg")
+# lane_img = np.copy(img)
+# canny_img = canny(lane_img)
+# cropped_img = region_of_interest(canny_img)
+# lines = cv2.HoughLinesP(
+#     cropped_img, 2, np.pi / 180, 100, np.array([]), minLineLength=40, maxLineGap=5
+# )
+# averaged_lines = average_slope_intercept(lane_img, lines)
+# line_img = display_lines(lane_img, averaged_lines)
+# combo = cv2.addWeighted(lane_img, 0.8, line_img, 1, 1)
+# cv2.imshow("Result", combo)
+# cv2.waitKey(0)
 
-# plt.imshow(canny)
-# plt.show()
+cap = cv2.VideoCapture("test2.mp4")
+
+while cap.isOpened():
+    _, frame = cap.read()
+    canny_img = canny(frame)
+    cropped_img = region_of_interest(canny_img)
+    lines = cv2.HoughLinesP(
+        cropped_img, 2, np.pi / 180, 100, np.array([]), minLineLength=40, maxLineGap=5
+    )
+    averaged_lines = average_slope_intercept(frame, lines)
+    line_img = display_lines(frame, averaged_lines)
+    combo = cv2.addWeighted(frame, 0.8, line_img, 1, 1)
+    cv2.imshow("Result", combo)
+    if (cv2.waitKey(1) & 0xFF) == ord("q"):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
